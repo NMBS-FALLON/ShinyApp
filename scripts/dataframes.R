@@ -263,13 +263,13 @@ df_fallon_sold_fallon <- df_fallon_sold_fallon[complete.cases(df_fallon_sold_fal
 # df_test <- df_test[complete.cases(df_test),]
 # write.csv(df_test,"./data/df_quoted_map.csv")
 df_joist_quoted_map <- read.csv("./data/df_quoted_map.csv", header = TRUE, check.names=FALSE, stringsAsFactors = FALSE, sep = ",", strip.white = TRUE)
-listUniqueTakeoffPerson <- data.frame(unique(df_joist_quoted_map$TakeoffPerson))
-df_test2 <- listUniqueTakeoffPerson
-colnames(df_test2) <- "TakeoffPerson"
-for(i in c(1:nrow(listUniqueTakeoffPerson)))
-{
-  df_test2[i,"Color"] <- df_colors[i,1]
-}
+df_listUniqueTakeoffPerson <- data.frame(unique(df_joist_quoted_map$TakeoffPerson))
+colnames(df_listUniqueTakeoffPerson) <- "TakeoffPerson"
+df_listUniqueTakeoffPerson[,"Color"] <- df_colors[1:nrow(df_listUniqueTakeoffPerson),1]
 
-df_joist_quoted_map <- merge(df_test2, df_joist_quoted_map, all.y=TRUE, by ="TakeoffPerson")
+df_joist_quoted_map[,"Date"] <- as.Date(df_joist_quoted_map[,"Date"], "%m/%d/%Y")
 df_joist_sold_map <- read.csv("./data/df_test.csv", header = TRUE, check.names=FALSE, stringsAsFactors = FALSE, sep = ",", strip.white = TRUE)
+df_joist_sold_map[,"Date"] <- as.Date(df_joist_sold_map[,"Date"], "%m/%d/%Y")
+colnames(df_joist_sold_map)[colnames(df_joist_sold_map)=="takeoffperson"] <- "TakeoffPerson"
+#df_joist_quoted_map <- merge(df_listUniqueTakeoffPerson, df_joist_quoted_map, all.y=TRUE, by ="TakeoffPerson")
+#df_joist_sold_map <- merge(df_listUniqueTakeoffPerson, df_joist_sold_map, all.y = TRUE, by = "TakeoffPerson")

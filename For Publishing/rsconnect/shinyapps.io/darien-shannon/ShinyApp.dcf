@@ -1,0 +1,8 @@
+name: ShinyApp
+account: darien-shannon
+server: shinyapps.io
+bundleId: 550316
+url: https://darien-shannon.shinyapps.io/ShinyApp/
+when: 1473204158.33069
+asMultiple: FALSE
+asStatic: FALSE

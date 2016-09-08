@@ -73,6 +73,23 @@ SplitByInterval <- function(df,dateColumn,valueColumn, interval)
   return(df_new)
 }
 
+CreateIntervalColumn <- function(df,dateColumn, interval)
+{
+  if (interval == "day")
+  {
+    df[,"Interval"] <-  df[,dateColumn]
+  }
+  else if (interval == "week")
+  {
+    df[,"Interval"] <-  as.Date(cut(df[, dateColumn], breaks = "week", start.on.monday = TRUE))
+  }
+  else
+  {
+    df[,"Interval"] <-  as.Date(cut(df[,dateColumn], breaks = interval))
+  }
+  return(df)
+}
+
 # MonthlyTable <- function(df1,df1Name,dateColumn1,valueColumn1,df2,df2Name,dateColumn2,valueColumn2, startDate,endDate)
 # {
 #   numMonths <- 0
@@ -278,6 +295,13 @@ colnames(df_joist_sold_map)[colnames(df_joist_sold_map)=="takeoffperson"] <- "Ta
 #df_joist_quoted_map <- merge(df_listUniqueTakeoffPerson, df_joist_quoted_map, all.y=TRUE, by ="TakeoffPerson")
 #df_joist_sold_map <- merge(df_listUniqueTakeoffPerson, df_joist_sold_map, all.y = TRUE, by = "TakeoffPerson")
 # Define server logic required to draw a histogram
+
+
+
+
+
+
+
 shinyServer(function(input, output, session) {
   
   output$myPlot <- renderPlot({
@@ -362,44 +386,45 @@ shinyServer(function(input, output, session) {
     soldJoist <- soldJoist[soldJoist[,"Date"]>=start & soldJoist[,"Date"]<=end,]
     soldJoist[,"Total Tons_Cumulative"] <- soldJoist[,"Total Tons_Cumulative"]-
       soldJoist[1,"Total Tons_Cumulative"]
-    soldJoist_inter <- SplitByInterval(soldJoist,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
-    soldJoist_inter[,"TYPE"] <- "soldJoist"
-    colnames(soldJoist_inter) <- c("DATE", "TONS")
+    #soldJoist_inter <- SplitByInterval(soldJoist,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
+    #soldJoist_inter[,"TYPE"] <- "soldJoist"
+    #colnames(soldJoist_inter) <- c("DATE", "TONS")
     
     released <- df_fallon_released
     released <- released[released[,"Date"]>=start & released[,"Date"]<=end,]
     released[,"Total Tons_Cumulative"] <- released[,"Total Tons_Cumulative"]-
       released[1,"Total Tons_Cumulative"]
-    released_inter <- SplitByInterval(released,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
-    released_inter[,"TYPE"] <- "released"
-    colnames(released_inter) <- c("DATE", "TONS")
+    #released_inter <- SplitByInterval(released,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
+    #released_inter[,"TYPE"] <- "released"
+    #colnames(released_inter) <- c("DATE", "TONS")
     
     soldDeck <- df_fallon_deck_sold
     soldDeck <- soldDeck[soldDeck[,"Date"]>=start & soldDeck[,"Date"]<=end,]
     soldDeck[,"Tons_Cumulative"] <- soldDeck[,"Tons_Cumulative"]-
       soldDeck[1,"Tons_Cumulative"]
-    soldDeck_inter <- SplitByInterval(soldDeck,dateColumn="Date", valueColumn = "Tons", interval = interval)
-    soldDeck_inter[,"TYPE"] <- "soldDeck"
-    colnames(soldDeck_inter) <- c("DATE", "TONS")
+    #soldDeck_inter <- SplitByInterval(soldDeck,dateColumn="Date", valueColumn = "Tons", interval = interval)
+    #soldDeck_inter[,"TYPE"] <- "soldDeck"
+    #colnames(soldDeck_inter) <- c("DATE", "TONS")
     
     quotedJoist <- df_fallon_quoted
     quotedJoist <- quotedJoist[quotedJoist[,"Date"]>=start & quotedJoist[,"Date"]<=end,]
     quotedJoist[,"Total Tons_Cumulative"] <- quotedJoist[,"Total Tons_Cumulative"]-
       quotedJoist[1,"Total Tons_Cumulative"]
-    quotedJoist_inter <- SplitByInterval(quotedJoist,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
-    quotedJoist_inter[,"TYPE"] <-  "quotedJoist"
-    colnames(quotedJoist_inter) <- c("DATE", "TONS")
+    #quotedJoist_inter <- SplitByInterval(quotedJoist,dateColumn="Date", valueColumn = "Total Tons", interval = interval)
+    #quotedJoist_inter[,"TYPE"] <-  "quotedJoist"
+    #colnames(quotedJoist_inter) <- c("DATE", "TONS")
     
     quotedDeck <- df_fallon_deck_quoted_all
     quotedDeck <- quotedDeck[quotedDeck[,"Date"]>=start & quotedDeck[,"Date"]<=end,]
     quotedDeck[,"Tons_Cumulative"] <- quotedDeck[,"Tons_Cumulative"]-
       quotedDeck[1,"Tons_Cumulative"]
-    quotedDeck_inter <- SplitByInterval(quotedDeck,dateColumn="Date", valueColumn = "Tons", interval = interval)
-    quotedDeck_inter[,"TYPE"] <- "quotedDeck"
-    colnames(quotedDeck_inter) <- c("DATE", "TONS")
+    #quotedDeck_inter <- SplitByInterval(quotedDeck,dateColumn="Date", valueColumn = "Tons", interval = interval)
+    #quotedDeck_inter[,"TYPE"] <- "quotedDeck"
+    #colnames(quotedDeck_inter) <- c("DATE", "TONS")
     
     
     
+
     
     barPlot <- ggplot()+
       guides(color=guide_legend(title=NULL))+
@@ -418,12 +443,16 @@ shinyServer(function(input, output, session) {
     
     if('Joist Released' %in% graphs == TRUE)
     {
-      barPlot = barPlot +geom_bar(data=released_inter, aes(released_inter[,1], released_inter[,2], color="JOIST RELEASED"), size = 1,stat = "identity", position = "dodge")
+      released <- df_fallon_released
+      released <- released[released[,"Date"]>=start & released[,"Date"]<=end,]
+      released <- CreateIntervalColumn(released,"Date", input$interval)
+      barPlot = barPlot +geom_bar(data=released, aes(released_inter[,"Interval"], released_inter[,"Total Tons"], color="JOIST RELEASED"), size = 1,stat = "identity", position = "dodge")
     }
     
     if('Joist Sold' %in% graphs == TRUE)
     {
-      barPlot = barPlot +geom_bar(data=soldJoist_inter, aes(soldJoist_inter[,1], soldJoist_inter[,2], color="JOIST SOLD"), size = 1, stat = "identity", position = "dodge")
+      barPlot = barPlot + stat_summary()
+        geom_bar(data=soldJoist_inter, aes(soldJoist_inter[,1], soldJoist_inter[,2], color="JOIST SOLD"), size = 1, stat = "identity", position = "dodge")
     }
     if('Joist Quoted' %in% graphs == TRUE)
     {

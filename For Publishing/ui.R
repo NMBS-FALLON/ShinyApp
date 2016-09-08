@@ -35,6 +35,7 @@ shinyUI(
                         sidebarPanel(width = 3,
                           selectInput("whatToMap", label = h5("MAP:"), choices=list(
                             whatToMap = c(`Joist Sold` = 'joistSold', `Joist Quoted` = 'joistQuoted'))),
+                          uiOutput("ui"),
                           dateInput("startDate_Map", label = h5("Start Date:"), value = "2016-01-01"),
                           dateInput("endDate_Map", label = h5("End Date:"), value = "2017-01-01")
                         ),

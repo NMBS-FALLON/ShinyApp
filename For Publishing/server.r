@@ -13,6 +13,7 @@ library("shiny")
 library("leaflet")
 library("plyr")
 
+
 #source("./scripts/dataframes.r")
 AddCumulativeCol <- function(df, columnIndex) 
 {
@@ -278,6 +279,21 @@ colnames(df_joist_sold_map)[colnames(df_joist_sold_map)=="takeoffperson"] <- "Ta
 #df_joist_quoted_map <- merge(df_listUniqueTakeoffPerson, df_joist_quoted_map, all.y=TRUE, by ="TakeoffPerson")
 #df_joist_sold_map <- merge(df_listUniqueTakeoffPerson, df_joist_sold_map, all.y = TRUE, by = "TakeoffPerson")
 # Define server logic required to draw a histogram
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 shinyServer(function(input, output, session) {
   
   output$myPlot <- renderPlot({
@@ -454,13 +470,25 @@ shinyServer(function(input, output, session) {
     {
       df_test <- df_joist_sold_map
     }
+    
+
     start_map <- input$startDate_Map
     end_map <- input$endDate_Map
+    #start_map <- as.Date("2016-01-01")
+    #end_map <- as.Date("2017-01-01")
     df_test <- df_test[df_test[,"Date"]>=start_map & df_test[,"Date"]<end_map,]
-    df_listUniqueTakeoffPerson <- data.frame(unique(df_test$TakeoffPerson))
+    df_listUniqueTakeoffPerson <<- data.frame(unique(df_test$TakeoffPerson))
     colnames(df_listUniqueTakeoffPerson) <- "TakeoffPerson"
     df_listUniqueTakeoffPerson[,"Color"] <- df_colors[1:nrow(df_listUniqueTakeoffPerson),1]
+    df_estimators <<- df_joist_quoted_map
     df_test <- merge(df_listUniqueTakeoffPerson, df_test, all.y=TRUE, by ="TakeoffPerson")
+    if (is.null(input$estimators) == FALSE)
+    {
+      df_test <- df_test[df_test$TakeoffPerson %in% input$estimators,]
+    }
+    
+    df_test <- df_test[order(-df_test[,"Total Tons"]),]
+    row.names(df_test) <- 1:nrow(df_test)
     m <- leaflet(data = df_test[,]) %>%
       addTiles() %>%  # Add default OpenStreetMap map tiles
       #addMarkers(~LONG, ~LAT, popup = as.character(paste(df_test$`Job Name`,df_test$`Total Tons`, sep="\n")) )
@@ -468,6 +496,12 @@ shinyServer(function(input, output, session) {
       addLegend(position = "bottomright", labels=~df_listUniqueTakeoffPerson$`TakeoffPerson`, colors = ~df_listUniqueTakeoffPerson$`Color`) %>%
       addProviderTiles("CartoDB.Positron")
     m
+  })
+  
+  output$ui <- renderUI({
+    selectizeInput("estimators", label = h5("Graph(s):"), choices = list(
+      Sales = as.character(unique(df_estimators$TakeoffPerson))
+    ), multiple = TRUE)
   })
 
 })
